@@ -15,9 +15,10 @@ RUN CGO_ENABLED=0 go build -trimpath \
 # (чтобы НЕ требовать правок проброса портов в compose) и пишет БД/обновления
 # в /data и /app без возни с правами тома. Поверхность атаки мала: read-only
 # страница + Telegram-бот.
+# upd: remove expose for std ports
 FROM gcr.io/distroless/static-debian12
 COPY --from=build /app /app
 COPY --from=build /data /data
 WORKDIR /app
-EXPOSE 80 443 8080
+# EXPOSE 80 443 8080
 ENTRYPOINT ["/app/statuspage"]
