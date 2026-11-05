@@ -42,7 +42,7 @@ services:
       SUBSCRIPTION_JSON_FORMAT: "true"     # балансиры-группы из XRAY_JSON проверяются по узлам; если панель JSON не отдаёт — работает как раньше
 
   statuspage:
-    image: ghcr.io/STiiiiKS/xray-checker-statuspage:go-build
+    image: ghcr.io/stiiiiks/xray-checker-statuspage:go-build
     container_name: statuspage
     hostname: statuspage
     restart: unless-stopped
