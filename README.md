@@ -23,36 +23,55 @@ services:
   xray-checker:
     image: kutovoys/xray-checker
     container_name: xray-checker
+    hostname: xray-checker
     restart: unless-stopped
-    network_mode: host
+    # network_mode: host
+    ports:
+      - "127.0.0.1:2112:2112"
+    networks:
+      - remnawave-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on: [statuspage]
     environment:
-      SUBSCRIPTION_URL: "http://localhost:8081/sub"
+      SUBSCRIPTION_URL: "http://statuspage:8081/sub"
       PROXY_CHECK_INTERVAL: "300"          # частота РЕАЛЬНЫХ проверок прокси (сек) — меняешь здесь
       SUBSCRIPTION_JSON_FORMAT: "true"     # балансиры-группы из XRAY_JSON проверяются по узлам; если панель JSON не отдаёт — работает как раньше
 
   statuspage:
-    image: ghcr.io/mrvibecodic/xray-checker-statuspage:go-build
+    image: ghcr.io/STiiiiKS/xray-checker-statuspage:go-build
     container_name: statuspage
+    hostname: statuspage
     restart: unless-stopped
-    network_mode: host
+    # network_mode: host
+    ports:
+      - "127.0.0.1:8081:8081"
+      - "127.0.0.1:9090:9090"
+    networks:
+      - remnawave-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     environment:
       # --- обязательное ---
-      BOT_TOKEN: "ВПИШИ_ТОКЕН_БОТА"        # от @BotFather; "" = только страница, без бота
+      BOT_TOKEN: "your_bot_token" # от @BotFather; "" = только страница, без бота
       # TELEGRAM_PROXY: "socks5://user:password@127.0.0.1:1080" # (необяз.) SOCKS5 только для Telegram Bot API
-      BOT_ADMIN_IDS: "ВПИШИ_СВОЙ_CHAT_ID"  # твой id от @userinfobot; несколько — через запятую
+      BOT_ADMIN_IDS: "your_tg_id"  # твой id от @userinfobot; несколько — через запятую
       # NOTIFY_CHAT_IDS: "-1001234567890"  # (необяз.) чаты/группы/каналы; топик форума — через двоеточие: -1001234567890:42 (прав на бота не дают)
       # --- базовое ---
-      CHECKER_URL: "http://localhost:2112"
+      CHECKER_URL: "http://xray-checker:2112"
       TZ: "Europe/Moscow"
       TITLE: "Статус серверов"
-      # LOCALE: "ru"     # ru (по умолчанию) или en
-      # WEB_PASSWORD: ""     # включает HTTP Basic Auth для веб-UI; пусто = без пароля
-      # WEB_USER: ""     # необяз.; если задан — логин должен совпасть
       # --- За своим reverse-proxy (nginx/Caddy/Traefik): раскомментируй, и сервис
       #     НЕ займёт 80/443 и НЕ будет поднимать TLS сам — этим займётся твой прокси.
-      # PORT: "8080"
-      # TLS_MODE: "off"
+      # INTERNAL_PORT: "9081"
+      PORT: "9090"
+      TLS_MODE: "off"
 
       # --- Cloudflare Full (strict): свой Origin Certificate (файлы в том /data) ---
       # TLS_MODE: "file"
@@ -68,8 +87,18 @@ services:
     volumes:
       - status-data:/data
 
+networks:
+  remnawave-network:
+    name: remnawave-network
+    driver: bridge
+    external: true
+
 volumes:
   status-data:
+    driver: local
+    external: false
+    name: status-data
+
 ```
 
 3. Запуск: `docker compose pull && docker compose up -d`
