@@ -106,7 +106,8 @@ func main() {
 	internalSrv := &http.Server{
 		// Только loopback: при network_mode: host это закрывает 8081 от внешней
 		// сети, но чекер (localhost:8081/sub) в той же host-сети до него достаёт.
-		Addr:              "127.0.0.1:" + cfg.InternalPort,
+		// upd: 127.0.0.1 -> 0.0.0.0
+		Addr:              "0.0.0.0:" + cfg.InternalPort,
 		Handler:           web.NewInternal(cfg, st).Handler(),
 		ReadHeaderTimeout: 10 * time.Second,
 		WriteTimeout:      30 * time.Second,
