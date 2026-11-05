@@ -1,5 +1,6 @@
 name: Release (go-build)
 on:
+  workflow_dispatch: 
   push:
     branches: [go-build]
 permissions:
